@@ -37,8 +37,6 @@ fn main() {
 
     println!("File: {}", &argparser.file.display());
 
-    let bytes = std::fs::read(&argparser.file).unwrap();
-
     let (_buffer, tokens) = match parse_file(argparser.file) {
         Ok(x) => x,
         Err(e) => panic!("Parse file error: {}", e),
