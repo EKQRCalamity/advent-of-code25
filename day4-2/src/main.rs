@@ -1,4 +1,4 @@
-use std::{fs::OpenOptions, path::PathBuf};
+use std::{fs::OpenOptions, path::PathBuf, time::Duration};
 
 use crate::{args::ArgParser, parser::{Lines, WorldParser}, world::World};
 
@@ -42,19 +42,42 @@ fn main() {
 
     let mut world = World::new(tokens);
 
+    println!("World: \n{}", world.display());
+    std::thread::sleep(Duration::from_millis(500));
     loop {
-        if world.current_is_paper() {
-            let papers_around = world.get_papers_around_position();
-            if papers_around < 4 {
-                value += 1;
+        let mut removed = false;
+        loop {
+            if world.current_is_paper() {
+                let papers_around = world.get_papers_around_position();
+                if papers_around < 4 {
+                    world.remove_current_paper();
+                    removed = true;
+                    value += 1;
+                }
             }
-        }
         
-        if world.should_end() {
+            if world.should_end() {
+                break;
+            }
+        
+            world.next();
+        }
+        println!("{}", (0..=136).map(|_| "-".to_owned()).collect::<String>());
+        println!("World: {}", (0..=129).map(|_| "#".to_owned()).collect::<String>());
+        world.lines()
+            .iter()
+            .for_each(|x| {
+                x
+                .iter()
+                .for_each(|x| {
+                        print!("{}", x);
+                    });
+                print!("\n");
+            });
+        world.reset_position();
+        if !removed {
             break;
         }
-        
-        world.next();
     }
 
     println!("Password should be: {}", value);
